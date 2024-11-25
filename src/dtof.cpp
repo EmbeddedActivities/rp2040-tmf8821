@@ -95,10 +95,9 @@ const int GRID_SIZE = 3;
 const int SCREEN_SIZE = 240;
 const int CELL_SIZE = SCREEN_SIZE / GRID_SIZE;
 
-
-const int centerX = 120; // 矩形中心 X 坐标
-const int centerY = 120; // 矩形中心 Y 坐标
-const int rectWidth = 100; // 矩形宽度
+const int centerX = 120;    // 矩形中心 X 坐标
+const int centerY = 120;    // 矩形中心 Y 坐标
+const int rectWidth = 100;  // 矩形宽度
 const int rectHeight = 100; // 矩形高度
 
 SparkFun_TMF882X dToF;
@@ -106,6 +105,43 @@ SparkFun_TMF882X dToF;
 
 void onMeasurementCallback(struct tmf882x_msg_meas_results *myResults) {
 
+  // 按照1.1 1.2 1.3 1.0 1.1 1.2 0.9 1.0 1.1格式串口输出
+  for (int i = 0; i < myResults->num_results; ++i) {
+    if (i > 8) {
+      continue;
+    }
+    int channel = myResults->results[i].channel;
+    Serial.print(myResults->results[i].distance_mm);
+    Serial.print(" ");
+  }
+  Serial.println();
+
+  // float map[3][3] = {0};
+  // for (int i = 0; i < myResults->num_results; ++i) {
+  //   int channel = myResults->results[i].channel;
+  //   Serial.print(myResults->results[i].distance_mm);
+  //         Serial.print("-");
+  //   float distance = myResults->results[i].distance_mm;
+  //   if (myResults->results[i].confidence < 100) {
+  //     continue;
+  //   }
+
+  //   // 将 channel 映射到矩阵索引
+  //   int row = (channel - 1) / matrixSize;
+  //   int col = (channel - 1) % matrixSize;
+
+  //   // 存入矩阵
+  //   map[row][col] = distance;
+  // }
+
+  // for (int i = 0; i < matrixSize; i++) {
+  //   for (int j = 0; j < matrixSize; j++) {
+  //     Serial.print(map[i][j]);
+  //     Serial.print(" ");
+  //   }
+  // }
+  // Serial.println();
+  return;
   // 输入的 Z 值矩阵
   float Z[matrixSize][matrixSize] = {0};
 
@@ -138,7 +174,6 @@ void onMeasurementCallback(struct tmf882x_msg_meas_results *myResults) {
   // 填充背景
   sprite.fillSprite(TFT_BLACK); // 清空背景
 
-
   // / 转换角度为弧度
   float radY = radians(angle);
 
@@ -160,8 +195,10 @@ void onMeasurementCallback(struct tmf882x_msg_meas_results *myResults) {
   sprite.fillTriangle(x1, y1, x3, y3, x4, y4, TFT_RED);
 
   // 绘制坐标轴
-  sprite.drawLine(centerX - 50, centerY, centerX + 50, centerY, TFT_WHITE); // X 轴
-  sprite.drawLine(centerX, centerY - 50, centerX, centerY + 50, TFT_WHITE); // Z 轴
+  sprite.drawLine(centerX - 50, centerY, centerX + 50, centerY,
+                  TFT_WHITE); // X 轴
+  sprite.drawLine(centerX, centerY - 50, centerX, centerY + 50,
+                  TFT_WHITE); // Z 轴
 
   // 将 Sprite 推送到屏幕
   sprite.pushSprite(0, 0);
@@ -187,8 +224,9 @@ void onMeasurementCallback(struct tmf882x_msg_meas_results *myResults) {
   // sprite.fillTriangle(x1, z1, x3, z3, x4, z4, TFT_RED);
 
   // // 绘制坐标轴
-  // sprite.drawLine(centerX - 50, centerY, centerX + 50, centerY, TFT_WHITE); // X 轴
-  // sprite.drawLine(centerX, centerY - 50, centerX, centerY + 50, TFT_WHITE); // Z 轴
+  // sprite.drawLine(centerX - 50, centerY, centerX + 50, centerY, TFT_WHITE);
+  // // X 轴 sprite.drawLine(centerX, centerY - 50, centerX, centerY + 50,
+  // TFT_WHITE); // Z 轴
 
   // // 将 Sprite 推送到屏幕
   // sprite.pushSprite(0, 0);
@@ -254,6 +292,7 @@ void onMeasurementCallback(struct tmf882x_msg_meas_results *myResults) {
 void dtof_init() {
   // 初始化串口
   // dToF.setCurrentSPADMap(TMF8X2X_COM_SPAD_MAP_ID__spad_map_id__map_no_7);
+  // dToF.setCurrentSPADMap(TMF8X2X_COM_SPAD_MAP_ID__spad_map_id__map_no_1);
   dToF.setCurrentSPADMap(TMF8X2X_COM_SPAD_MAP_ID__spad_map_id__map_no_3);
   // 初始化 TMF882X
   if (!dToF.begin(Wire1)) {
@@ -271,7 +310,7 @@ void dtof_init() {
 
   // Set our delay between samples in the processing loop  - 1 second - note
   // it's in ms
-  dToF.setSampleDelay(20);
+  dToF.setSampleDelay(300);
 }
 
 void dtof_loop() {
